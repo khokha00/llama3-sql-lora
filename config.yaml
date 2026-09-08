@@ -1,0 +1,85 @@
+# Llama-3 SQL QLoRA — shared configuration
+# Override any value via CLI flags in the Python scripts.
+
+project:
+  name: llama3-sql-lora
+  description: QLoRA fine-tune of Llama 3 for text-to-SQL
+
+model:
+  base_id: meta-llama/Meta-Llama-3-8B-Instruct
+  # After training, adapters land here (local).
+  adapter_dir: outputs/qlora-adapter
+  merged_dir: outputs/merged-model
+  hub_repo: ""  # e.g. your-username/llama3-8b-sql-qlora
+
+data:
+  # Public text-to-SQL set with CREATE TABLE context.
+  hf_dataset: b-mc2/sql-create-context
+  train_split: train
+  eval_fraction: 0.05
+  max_train_samples: null  # set an int to subsample (useful on Colab)
+  max_eval_samples: 200
+  processed_dir: data/processed
+  max_seq_length: 2048
+  instruction_template: llama3
+
+qlora:
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+  bnb_4bit_compute_dtype: bfloat16
+  lora_r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+  bias: none
+  task_type: CAUSAL_LM
+
+train:
+  output_dir: outputs/qlora-run
+  num_train_epochs: 1
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 2.0e-4
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  logging_steps: 10
+  save_steps: 200
+  eval_steps: 200
+  save_total_limit: 2
+  max_grad_norm: 0.3
+  bf16: true
+  fp16: false
+  gradient_checkpointing: true
+  optim: paged_adamw_8bit
+  report_to: none  # set "wandb" if you log there
+  seed: 42
+
+eval:
+  max_new_tokens: 256
+  temperature: 0.0
+  results_dir: outputs/eval
+
+onnx:
+  export_dir: outputs/onnx
+  opset: 17
+  quantize: true
+  quant_type: dynamic_int8  # dynamic_int8 | none
+  dummy_seq_len: 128
+
+benchmark:
+  prompt: "List the names of employees hired after 2020."
+  schema: "CREATE TABLE employees (id INT, name TEXT, hired_at DATE);"
+  num_warmup: 3
+  num_runs: 20
+  max_new_tokens: 128
+  results_path: outputs/benchmark/inference.json

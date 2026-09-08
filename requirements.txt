@@ -1,0 +1,27 @@
+# Core training (QLoRA)
+torch>=2.2.0
+transformers>=4.43.0
+datasets>=2.19.0
+accelerate>=0.31.0
+peft>=0.11.0
+bitsandbytes>=0.43.0
+trl>=0.9.0
+sentencepiece>=0.2.0
+protobuf>=4.25.0
+pyyaml>=6.0
+tqdm>=4.66.0
+huggingface_hub>=0.23.0
+safetensors>=0.4.3
+
+# Eval
+sqlparse>=0.5.0
+evaluate>=0.4.2
+rouge_score>=0.1.2
+
+# ONNX export + inference
+onnx>=1.16.0
+onnxruntime>=1.18.0
+optimum>=1.21.0
+
+# Optional logging
+# wandb
